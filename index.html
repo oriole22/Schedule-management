@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경기 일정 모아보기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 헤더 */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            cursor: pointer;
+        }
+
+        nav {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #555;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        nav a:hover {
+            background-color: #f0f0f0;
+            color: #1a1a1a;
+        }
+
+        nav a.active {
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+
+        /* 메인 콘텐츠 */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 5rem 1.5rem 3rem;
+        }
+
+        /* 페이지 섹션 */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 홈 페이지 스타일 */
+        .hero {
+            text-align: center;
+            padding: 4rem 1rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card.f1 { border-top: 4px solid #e10600; }
+        .feature-card.kbo { border-top: 4px solid #003087; }
+        .feature-card.lck { border-top: 4px solid #c8aa6e; }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        /* 섹션 타이틀 */
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* 월별 그룹 */
+        .month-group {
+            margin-bottom: 2.5rem;
+        }
+
+        .month-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        /* 카드 그리드 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .info-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: baseline;
+            font-size: 0.85rem;
+        }
+
+        .label {
+            color: #999;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 35px;
+        }
+
+        .value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* 배지 */
+        .badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .badge.sprint { background: #ff6b00; color: #fff; }
+        .badge.finished { background: #e0e0e0; color: #666; }
+        .badge.upcoming { background: #4caf50; color: #fff; }
+
+        /* KBO 특별 스타일 */
+        .kbo-highlight {
+            background: linear-gradient(135deg, #003087 0%, #0052cc 100%);
+            color: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kbo-highlight h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .kbo-highlight p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        /* LCK 특별 스타일 */
+        .lck-highlight {
+            background: linear-gradient(135deg, #0a1428 0%, #1a3a5c 100%);
+            color: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .lck-highlight h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #c8aa6e;
+        }
+
+        .lck-highlight p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        /* 푸터 */
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        /* 뒤로가기 버튼 */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover {
+            color: #1a1a1a;
+        }
+
+        /* 반응형 */
+        @media (max-width: 600px) {
+            .header-container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-title {
+                font-size: 1.25rem;
+            }
+
+            nav a {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.85rem;
+            }
+
+            main {
+                padding-top: 7rem;
+            }
+
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1 class="header-title" onclick="showPage('home')">경기 일정 모아보기</h1>
+            <nav>
+                <a onclick="showPage('home')" id="nav-home" class="active">홈</a>
+                <a onclick="showPage('f1')" id="nav-f1">F1</a>
+                <a onclick="showPage('kbo')" id="nav-kbo">KBO</a>
+                <a onclick="showPage('lck')" id="nav-lck">LCK</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- 홈 페이지 -->
+        <div id="page-home" class="page active">
+            <div class="hero">
+                <h1>🏆 경기 일정 모아보기</h1>
+                <p>F1, 한국 프로야구(KBO), 그리고 LCK 경기 일정을 한 곳에서 확인하세요. 2025 시즌 전체 일정을 제공합니다.</p>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card f1" onclick="showPage('f1')">
+                    <h3>🏎️ Formula 1</h3>
+                    <p>2025 F1 시즌 24개 그랑프리 전체 일정</p>
+                </div>
+                <div class="feature-card kbo" onclick="showPage('kbo')">
+                    <h3>⚾ KBO 리그</h3>
+                    <p>2025 프로야구 주요 일정 및 포스트시즌</p>
+                </div>
+                <div class="feature-card lck" onclick="showPage('lck')">
+                    <h3>🎮 LCK</h3>
+                    <p>2025 LCK 단일시즌제 주요 대회 일정</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- F1 페이지 -->
+        <div id="page-f1" class="page">
+            <div class="back-btn" onclick="showPage('home')">← 홈으로</div>
+            <div class="section-header">
+                <h2 class="section-title">🏎️ 2025 F1 시즌 일정</h2>
+                <p class="section-subtitle">총 24개 그랑프리 | 3월 16일 ~ 12월 7일</p>
+            </div>
+
+            <!-- 3월 -->
+            <div class="month-group">
+                <h3 class="month-title">3월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">호주 그랑프리 <span class="badge finished">종료</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">3월 14~16일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">앨버트 파크 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">중국 그랑프리 <span class="badge sprint">스프린트</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">3월 21~23일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">상하이 인터내셔널 서킷</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4월 -->
+            <div class="month-group">
+                <h3 class="month-title">4월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">일본 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">4월 4~6일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">스즈카 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">바레인 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">4월 11~13일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">바레인 인터내셔널 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">사우디아라비아 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">4월 18~20일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">제다 코르니쉬 서킷</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5월 -->
+            <div class="month-group">
+                <h3 class="month-title">5월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">마이애미 그랑프리 <span class="badge sprint">스프린트</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">5월 2~4일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">마이애미 인터내셔널 오토드롬</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">에밀리아 로마냐 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">5월 16~18일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">이몰라 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">모나코 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">5월 23~25일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">모나코 시가지 서킷</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6월 -->
+            <div class="month-group">
+                <h3 class="month-title">6월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">스페인 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">5월 30일~6월 1일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">카탈루냐 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">캐나다 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">6월 13~15일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">질 빌뇌브 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">오스트리아 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">6월 27~29일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">레드불 링</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7월 -->
+            <div class="month-group">
+                <h3 class="month-title">7월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">영국 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">7월 4~6일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">실버스톤 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">벨기에 그랑프리 <span class="badge sprint">스프린트</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">7월 25~27일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">스파-프랑코르샹 서킷</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8월 -->
+            <div class="month-group">
+                <h3 class="month-title">8월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">헝가리 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">8월 1~3일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">헝가로링</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">네덜란드 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">8월 29~31일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">잔드보르트 서킷</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9월 -->
+            <div class="month-group">
+                <h3 class="month-title">9월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">이탈리아 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">9월 5~7일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">몬차 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">아제르바이잔 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">9월 19~21일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">바쿠 시가지 서킷</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10월 -->
+            <div class="month-group">
+                <h3 class="month-title">10월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">싱가포르 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">10월 3~5일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">마리나 베이 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">미국 그랑프리 <span class="badge sprint">스프린트</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">10월 17~19일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">서킷 오브 디 아메리카스</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">멕시코시티 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">10월 24~26일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">에르마노스 로드리게스 서킷</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 11월 -->
+            <div class="month-group">
+                <h3 class="month-title">11월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">브라질 그랑프리 <span class="badge sprint">스프린트</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">11월 7~9일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">인테르라고스 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">라스베이거스 그랑프리</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">11월 21~23일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">라스베이거스 스트립 서킷</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">카타르 그랑프리 <span class="badge sprint">스프린트</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">11월 28~30일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">루사일 인터내셔널 서킷</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 12월 -->
+            <div class="month-group">
+                <h3 class="month-title">12월</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">아부다비 그랑프리 <span class="badge upcoming">시즌 피날레</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">12월 5~7일</span></div>
+                            <div class="info-row"><span class="label">서킷</span><span class="value">야스 마리나 서킷</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KBO 페이지 -->
+        <div id="page-kbo" class="page">
+            <div class="back-btn" onclick="showPage('home')">← 홈으로</div>
+            <div class="section-header">
+                <h2 class="section-title">⚾ 2025 KBO 리그 일정</h2>
+                <p class="section-subtitle">신한 SOL Bank KBO 리그 | 3월 22일 개막</p>
+            </div>
+
+            <div class="kbo-highlight">
+                <h3>📢 2025 시즌 정보</h3>
+                <p>정규시즌: 3월 22일 ~ 10월 초 | 팀당 144경기 | 올스타전: 7월 12일 (대전)</p>
+            </div>
+
+            <!-- 시범경기 -->
+            <div class="month-group">
+                <h3 class="month-title">3월 - 시범경기 및 개막</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">시범경기</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">기간</span><span class="value">3월 8일 ~ 18일</span></div>
+                            <div class="info-row"><span class="label">경기수</span><span class="value">팀당 10경기</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">정규시즌 개막전 <span class="badge upcoming">개막</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">3월 22일 (토)</span></div>
+                            <div class="info-row"><span class="label">비고</span><span class="value">5개 구장 동시 개막</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 개막 카드 -->
+            <div class="month-group">
+                <h3 class="month-title">2025 개막전 대진</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">KIA vs 삼성</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">장소</span><span class="value">광주 기아챔피언스필드</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">LG vs 두산</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">장소</span><span class="value">잠실야구장</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">SSG vs NC</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">장소</span><span class="value">인천 SSG랜더스필드</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">KT vs 롯데</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">장소</span><span class="value">수원 KT위즈파크</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">한화 vs 키움</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">장소</span><span class="value">대전 한화생명볼파크</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 주요 일정 -->
+            <div class="month-group">
+                <h3 class="month-title">7월 - 올스타전</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">2025 KBO 올스타전 <span class="badge upcoming">이벤트</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">7월 12일 (토)</span></div>
+                            <div class="info-row"><span class="label">장소</span><span class="value">대전 한화생명볼파크</span></div>
+                            <div class="info-row"><span class="label">비고</span><span class="value">올스타 브레이크 6일</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 포스트시즌 -->
+            <div class="month-group">
+                <h3 class="month-title">10월~11월 - 포스트시즌</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">정규시즌 종료</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">10월 초 (우천시 변동)</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">와일드카드 결정전</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">대상</span><span class="value">4위 vs 5위</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">단판 승부</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">준플레이오프</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">대상</span><span class="value">3위 vs WC 승자</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">3전 2선승제</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">플레이오프</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">대상</span><span class="value">2위 vs 준PO 승자</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">5전 3선승제</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">한국시리즈 <span class="badge upcoming">챔피언 결정</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">대상</span><span class="value">1위 vs PO 승자</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">7전 4선승제</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10개 구단 -->
+            <div class="month-group">
+                <h3 class="month-title">2025 KBO 10개 구단</h3>
+                <div class="card-grid">
+                    <div class="card"><div class="card-title">🦁 삼성 라이온즈</div><div class="card-info"><span class="value">대구삼성라이온즈파크</span></div></div>
+                    <div class="card"><div class="card-title">🐯 KIA 타이거즈</div><div class="card-info"><span class="value">광주 기아챔피언스필드</span></div></div>
+                    <div class="card"><div class="card-title">👯 LG 트윈스</div><div class="card-info"><span class="value">잠실야구장</span></div></div>
+                    <div class="card"><div class="card-title">🐻 두산 베어스</div><div class="card-info"><span class="value">잠실야구장</span></div></div>
+                    <div class="card"><div class="card-title">🦅 한화 이글스</div><div class="card-info"><span class="value">대전 한화생명볼파크</span></div></div>
+                    <div class="card"><div class="card-title">🦖 NC 다이노스</div><div class="card-info"><span class="value">창원NC파크</span></div></div>
+                    <div class="card"><div class="card-title">⚡ SSG 랜더스</div><div class="card-info"><span class="value">인천 SSG랜더스필드</span></div></div>
+                    <div class="card"><div class="card-title">🧙 KT 위즈</div><div class="card-info"><span class="value">수원 KT위즈파크</span></div></div>
+                    <div class="card"><div class="card-title">🦅 키움 히어로즈</div><div class="card-info"><span class="value">고척스카이돔</span></div></div>
+                    <div class="card"><div class="card-title">🌊 롯데 자이언츠</div><div class="card-info"><span class="value">사직야구장</span></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LCK 페이지 -->
+        <div id="page-lck" class="page">
+            <div class="back-btn" onclick="showPage('home')">← 홈으로</div>
+            <div class="section-header">
+                <h2 class="section-title">🎮 2025 LCK 일정</h2>
+                <p class="section-subtitle">단일 시즌제 도입 | 1월 ~ 11월</p>
+            </div>
+
+            <div class="lck-highlight">
+                <h3>⚡ 2025 LCK 새로운 포맷</h3>
+                <p>스프링/서머 구분 폐지 → 단일 시즌제 도입 | 정규시즌 5라운드 | 피어리스 드래프트 도입</p>
+            </div>
+
+            <!-- 1월 -->
+            <div class="month-group">
+                <h3 class="month-title">1월 - LCK 컵</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">LCK 컵 개막 <span class="badge finished">종료</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">1월 15일 개막</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">그룹 대항전 + 플레이오프</span></div>
+                            <div class="info-row"><span class="label">특징</span><span class="value">피어리스 드래프트</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">LCK 컵 결승</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">2월 중순</span></div>
+                            <div class="info-row"><span class="label">비고</span><span class="value">FST 진출권 획득</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3월 -->
+            <div class="month-group">
+                <h3 class="month-title">3월 - FST (신규 국제대회)</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">First Stand Tournament <span class="badge finished">종료</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">3월</span></div>
+                            <div class="info-row"><span class="label">참가</span><span class="value">각 지역 리그 우승팀</span></div>
+                            <div class="info-row"><span class="label">특징</span><span class="value">피어리스 드래프트</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4-6월 -->
+            <div class="month-group">
+                <h3 class="month-title">4월~6월 - 정규시즌 1-2라운드</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">정규시즌 1라운드</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">방식</span><span class="value">10팀 풀리그 (3전 2선승)</span></div>
+                            <div class="info-row"><span class="label">기간</span><span class="value">약 4.5주</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">정규시즌 2라운드</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">방식</span><span class="value">더블 라운드 로빈</span></div>
+                            <div class="info-row"><span class="label">기간</span><span class="value">약 4.5주</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">LCK Road to MSI</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">대상</span><span class="value">1-2라운드 상위 6팀</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">킹 오브 더 힐</span></div>
+                            <div class="info-row"><span class="label">비고</span><span class="value">MSI 2팀 진출</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7월 -->
+            <div class="month-group">
+                <h3 class="month-title">7월 - MSI & EWC</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">Mid-Season Invitational <span class="badge finished">종료</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">7월</span></div>
+                            <div class="info-row"><span class="label">장소</span><span class="value">밴쿠버</span></div>
+                            <div class="info-row"><span class="label">LCK</span><span class="value">2팀 출전</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">EWC (Esports World Cup)</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">7월 16~20일</span></div>
+                            <div class="info-row"><span class="label">참가</span><span class="value">T1, Gen.G, 한화생명</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8-9월 -->
+            <div class="month-group">
+                <h3 class="month-title">8월~9월 - 정규시즌 3-5라운드</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">레전드 그룹</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">대상</span><span class="value">1-2라운드 상위 5팀</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">트리플 라운드 로빈</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">라이즈 그룹</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">대상</span><span class="value">1-2라운드 하위 5팀</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">트리플 라운드 로빈</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9-10월 -->
+            <div class="month-group">
+                <h3 class="month-title">9월~10월 - 플레이오프</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">플레이-인 스테이지</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">대상</span><span class="value">레전드 5위 + 라이즈 상위 3팀</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">더블 엘리미네이션</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">LCK 플레이오프</div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">대상</span><span class="value">레전드 상위 4팀 + 플레이인 통과팀</span></div>
+                            <div class="info-row"><span class="label">방식</span><span class="value">세미 더블 엘리미네이션</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">LCK 결승 <span class="badge finished">종료</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">비고</span><span class="value">MBC 지상파 생중계</span></div>
+                            <div class="info-row"><span class="label">진출</span><span class="value">월드 챔피언십</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10-11월 -->
+            <div class="month-group">
+                <h3 class="month-title">10월~11월 - 월드 챔피언십</h3>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-title">2025 LoL 월드 챔피언십 <span class="badge finished">종료</span></div>
+                        <div class="card-info">
+                            <div class="info-row"><span class="label">일시</span><span class="value">10월 14일 ~ 11월 9일</span></div>
+                            <div class="info-row"><span class="label">장소</span><span class="value">중국</span></div>
+                            <div class="info-row"><span class="label">LCK</span><span class="value">4팀 출전</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10개 팀 -->
+            <div class="month-group">
+                <h3 class="month-title">2025 LCK 10개 팀</h3>
+                <div class="card-grid">
+                    <div class="card"><div class="card-title">T1</div></div>
+                    <div class="card"><div class="card-title">Gen.G</div></div>
+                    <div class="card"><div class="card-title">한화생명 e스포츠</div></div>
+                    <div class="card"><div class="card-title">DRX</div></div>
+                    <div class="card"><div class="card-title">KT 롤스터</div></div>
+                    <div class="card"><div class="card-title">광동 프릭스</div></div>
+                    <div class="card"><div class="card-title">농심 레드포스</div></div>
+                    <div class="card"><div class="card-title">OK저축은행 브리온</div></div>
+                    <div class="card"><div class="card-title">디플러스 기아</div></div>
+                    <div class="card"><div class="card-title">피어엑스</div></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 경기 일정 모아보기. 일정은 변경될 수 있습니다.</p>
+    </footer>
+
+    <script>
+        function showPage(pageId) {
+            // 모든 페이지 숨기기
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // 모든 네비게이션 비활성화
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // 선택된 페이지 표시
+            document.getElementById('page-' + pageId).classList.add('active');
+
+            // 선택된 네비게이션 활성화
+            document.getElementById('nav-' + pageId).classList.add('active');
+
+            // 페이지 맨 위로 스크롤
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
